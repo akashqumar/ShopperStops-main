@@ -9,9 +9,9 @@ export default function Banner() {
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm text-white/90 backdrop-blur-sm mb-6">
             <SparklesIcon className="h-4 w-4 text-brand-300" />
-            <span>New arrivals every week</span>
+            <span className="text-black">New arrivals every week</span>
           </div>
-          <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="font-display text-4xl font-bold tracking-tight text-red sm:text-5xl lg:text-6xl">
             Style that fits
             <span className="block text-brand-300">your life</span>
           </h1>
@@ -28,7 +28,7 @@ export default function Banner() {
             </Link>
             <Link
               to="/search"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/5 px-6 py-3 text-sm font-semibold text-black backdrop-blur-sm transition-all hover:bg-white/10"
             >
               Explore
             </Link>
