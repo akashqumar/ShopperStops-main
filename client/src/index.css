@@ -1,132 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-brand: #0d9488;
+  --color-brand-hover: #0f766e;
+  --color-accent: #ea580c;
+  --color-accent-hover: #c2410c;
+  --color-surface: #f8fafc;
+  --color-surface-elevated: #ffffff;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-card-hover: 0 10px 40px -10px rgb(0 0 0 / 0.15), 0 4px 12px -4px rgb(0 0 0 / 0.08);
+}
 
-@import url('https://fonts.g.com/css2?family=Poppins:wght@300;400&display=swap');
-@import "rsuite/dist/rsuite.css";
-
-/* #root{ padding: 10px; } */
-*{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
 body {
-  font-family: Roboto, Helvetica, Arial, sans-serif;
-}
-/* font-family: 'Playfair Display', serif; */
-/* font-family: 'Poppins', sans-serif; */
-
-/* //navbar css */
-.navbar {
-  font-family: "Poppins", sans-serif;
-  font-size: 17px;
-  line-height: 26px;
-  text-transform: uppercase;
-  box-shadow: 0 8px 6px -6px gray;
-  --webkit-box-shadow: 0 8px 6px -6px gray;
-  border-bottom: solid gray !important;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* .nav-link {
-  font-weight: 300 !important;
-} */
-
-/* .active {
-  border-bottom: 2px solid black;
-} */
-
-.navbar-brand {
-  font-weight: 700;
-  font-family: "roboto", sans-serif;
-  letter-spacing: 3px;
-}
-/* =============================
-==========footer============= */
-
-.footer {
-  color: white;
-  padding: 25px;
-  background: #000000; /* fallback for old browsers */
-  background: -webkit-linear-gradient(
-    to right,
-    #434343,
-    #000000
-  ); /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(to right, #434343, #000000);
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Outfit", system-ui, sans-serif;
+  font-weight: 600;
 }
 
-.footer a {
-  text-decoration: none;
-  color: white;
-  padding: 10px;
+/* ========== Buttons ========== */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
+  }
+  .btn-accent {
+    @apply inline-flex items-center justify-center rounded-xl bg-accent-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-accent-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900;
+  }
+  .input-base {
+    @apply block w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+  }
+  .card-product {
+    @apply relative overflow-hidden rounded-2xl bg-white shadow-card transition-all duration-300 hover:shadow-card-hover;
+  }
+  .card-product img {
+    @apply transition-transform duration-500;
+  }
+  .card-product.group:hover img {
+    transform: scale(1.05);
+  }
 }
 
-.footer a:hover {
-  color: #ffefba;
-  border-bottom: 1px solid #ffefba;
-}
-/* =================================
-======== page not found css ======= */
+/* ========== Page not found ========== */
 .pnf {
   display: flex;
   min-height: 65vh;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  font-family: "Outfit", sans-serif;
 }
 
 .pnf-title {
-  font-size: 100px;
-  font-weight: 700;
+  font-size: 7rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .pnf-heading {
-  font-weight: normal;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin: 0.5rem 0 1rem;
 }
 
 .pnf-btn {
-  color: black;
-  border: 1px solid black;
+  color: white;
+  background: linear-gradient(135deg, var(--color-brand) 0%, #0f766e 100%);
   text-decoration: none;
-  padding: 10px;
-  margin-top: 10px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
+
 .pnf-btn:hover {
-  background-color: black;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover);
   color: white;
 }
-/* ========================================= */
-/* =========contact us ========= */
-.contactus {
-  margin: 0;
-  padding: 0;
-  height: 70vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.register{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 70vh;
-  flex-direction: column;
-}
-button{
-  border-radius: 5px;
-  background-color: aquamarine;
-}
-
-.centered-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/* Logo */
 .logo {
-  height: 70px; /* set the desired height of the logo */
-  width: 300px; /* set the desired width of the logo */
+  height: 2.5rem;
+  width: auto;
 }

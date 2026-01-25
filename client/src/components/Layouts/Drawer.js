@@ -1,191 +1,169 @@
 import React, { useEffect, useState } from "react";
-import {
-  Drawer,
-  Button,
-  Typography,
-  IconButton,
-} from "@material-tailwind/react";
 import axios from "axios";
-import { Checkbox, Radio } from "antd";
-
 import { useNavigate } from "react-router-dom";
-
-import toast from "react-hot-toast";
-import { AiOutlineReload } from "react-icons/ai";
-import { useCart } from "../../context/cart";
 import { Prices } from "../Prices";
+import { XMarkIcon, Bars3Icon } from "@heroicons/react/24/outline";
 
 export function DrawerDefault() {
-  const [open, setOpen] = React.useState(false);
-  const openDrawer = () => setOpen(true);
-  const closeDrawer = () => setOpen(false);
-  const [cart, setCart] = useCart();
-  const [products, setProducts] = useState([]);
+  const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [checked, setChecked] = useState([]);
   const [radio, setRadio] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  //get all cat
+  const openDrawer = () => setOpen(true);
+  const closeDrawer = () => setOpen(false);
+
   const getAllCategory = async () => {
     try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API}/api/v1/category/get-category`
-      );
-      if (data?.success) {
-        setCategories(data?.category);
-      }
-    } catch (error) {
-      console.log(error);
+      const { data } = await axios.get(`${process.env.REACT_APP_API}/api/v1/category/get-category`);
+      if (data?.success) setCategories(data?.category);
+    } catch (e) {
+      console.log(e);
     }
+  };
+
+  const handleFilter = (value, id) => {
+    setChecked((prev) => (value ? [...prev, id] : prev.filter((c) => c !== id)));
   };
 
   useEffect(() => {
     getAllCategory();
-    getTotal();
-    getAllProducts();
   }, []);
-  //get products
-  const getAllProducts = async () => {
-    try {
-      setLoading(true);
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API}/api/v1/product/product-list/${page}`
-      );
-      setLoading(false);
-      setProducts(data.products);
-    } catch (error) {
-      setLoading(false);
-      console.log(error);
-    }
-  };
 
-  //getTOtal COunt
-  const getTotal = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API}/api/v1/product/product-count`
-      );
-      setTotal(data?.total);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  // Prevent body scroll when drawer is open
   useEffect(() => {
-    if (page === 1) return;
-    loadMore();
-  }, [page]);
-  //load more
-  const loadMore = async () => {
-    try {
-      setLoading(true);
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API}/api/v1/product/product-list/${page}`
-      );
-      setLoading(false);
-      setProducts([...products, ...data?.products]);
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-    }
-  };
-
-  // filter by cat
-  const handleFilter = (value, id) => {
-    let all = [...checked];
-    if (value) {
-      all.push(id);
+    if (open) {
+      document.body.style.overflow = "hidden";
     } else {
-      all = all.filter((c) => c !== id);
+      document.body.style.overflow = "";
     }
-    setChecked(all);
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const handleReset = () => {
+    setChecked([]);
+    setRadio([]);
+    window.location.reload();
   };
-  useEffect(() => {
-    if (!checked.length || !radio.length) getAllProducts();
-  }, [checked.length, radio.length]);
 
-  useEffect(() => {
-    if (checked.length || radio.length) filterProduct();
-  }, [checked, radio]);
-
-  //get filterd product
-  const filterProduct = async () => {
-    try {
-      const { data } = await axios.post(
-        `${process.env.REACT_APP_API}/api/v1/product/product-filters`,
-        {
-          checked,
-          radio,
-        }
-      );
-      setProducts(data?.products);
-    } catch (error) {
-      console.log(error);
-    }
+  const goCategory = (slug) => {
+    closeDrawer();
+    navigate(slug ? `/category/${slug}` : "/category");
   };
 
   return (
-    <React.Fragment>
-      <button className="p-3 rounded-full" onClick={openDrawer}>
-        &#8801;
+    <>
+      <button
+        onClick={openDrawer}
+        className="shrink-0 flex items-center justify-center w-10 h-10 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+        aria-label="Open menu"
+      >
+        <Bars3Icon className="h-6 w-6" />
       </button>
-      <Drawer open={open} onClose={closeDrawer} className="p-4">
-        <div className="mb-6 flex items-center justify-between">
-          <IconButton variant="text" color="blue-gray" onClick={closeDrawer}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="h-5 w-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </IconButton>
-        </div>
 
-        {/* <div className="col-md-3 filters"> */}
-        <h4 className="text-center">Filter By Category</h4>
-        <div className="d-flex flex-column">
-          {categories?.map((c) => (
-            <Checkbox
-              key={c._id}
-              onChange={(e) => handleFilter(e.target.checked, c._id)}
-            >
-              {c.name}
-            </Checkbox>
-          ))}
-        </div>
+      {/* Backdrop */}
+      <div
+        role="presentation"
+        onClick={closeDrawer}
+        className={`fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        aria-hidden={!open}
+      />
 
-        {/* price filter */}
-        <h4 className="text-center mt-4">Filter By Price</h4>
-        <div className="d-flex flex-column">
-          <Radio.Group onChange={(e) => setRadio(e.target.value)}>
-            {Prices?.map((p) => (
-              <div key={p._id}>
-                <Radio value={p.array}>{p.name}</Radio>
-              </div>
-            ))}
-          </Radio.Group>
-        </div>
-        <div className="d-flex flex-column">
+      {/* Full-height drawer panel */}
+      <aside
+        aria-hidden={!open}
+        className={`fixed top-0 left-0 z-[9999] flex h-screen w-[300px] max-w-[85vw] flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+          open ? "translate-x-0" : "-translate-x-full"
+        } ${!open ? "pointer-events-none" : ""}`}
+      >
+        {/* Header */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-4">
+          <h3 className="font-display text-lg font-semibold text-slate-900">Menu</h3>
           <button
-            className="btn btn-danger"
-            onClick={() => window.location.reload()}
+            type="button"
+            onClick={closeDrawer}
+            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            aria-label="Close menu"
           >
-            RESET FILTERS
+            <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
-        {/* </div> */}
-      </Drawer>
-    </React.Fragment>
+
+        {/* Scrollable content - flex-1 + min-h-0 allows it to take remaining space and scroll */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
+          <section className="space-y-6">
+            <div>
+              <h4 className="mb-3 text-sm font-semibold text-slate-800">Category</h4>
+              <div className="space-y-1">
+                <label className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-50">
+                  <input
+                    type="checkbox"
+                    checked={checked.length === 0 && !radio.length}
+                    onChange={() => {}}
+                    className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                  />
+                  <span className="text-sm text-slate-700" onClick={() => goCategory()}>
+                    All
+                  </span>
+                </label>
+                {categories?.map((c) => (
+                  <label
+                    key={c._id}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked.includes(c._id)}
+                      onChange={(e) => handleFilter(e.target.checked, c._id)}
+                      className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                    />
+                    <span className="text-sm text-slate-700" onClick={() => goCategory(c.slug)}>
+                      {c.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="mb-3 text-sm font-semibold text-slate-800">Price</h4>
+              <div className="space-y-1">
+                {Prices?.map((p) => (
+                  <label
+                    key={p._id}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-50"
+                  >
+                    <input
+                      type="radio"
+                      name="price"
+                      checked={Array.isArray(radio) && radio[0] === p.array[0]}
+                      onChange={() => setRadio(p.array)}
+                      className="h-4 w-4 border-slate-300 text-brand-600 focus:ring-brand-500"
+                    />
+                    <span className="text-sm text-slate-700">{p.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* Footer - reset button */}
+        <div className="shrink-0 border-t border-slate-200 p-4">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="w-full rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+          >
+            Reset filters
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

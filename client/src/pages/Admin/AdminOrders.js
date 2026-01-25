@@ -126,7 +126,7 @@ import { Select } from "antd";
 const { Option } = Select;
 
 const AdminOrders = () => {
-  const [status, setStatus] = useState([
+  const [status] = useState([
     "Not Process",
     "Processing",
     "Shipped",
@@ -153,11 +153,9 @@ const AdminOrders = () => {
 
   const handleChange = async (orderId, value) => {
     try {
-      const { data } = await axios.put(
+      await axios.put(
         `${process.env.REACT_APP_API}/api/v1/auth/order-status/${orderId}`,
-        {
-          status: value,
-        }
+        { status: value }
       );
       getOrders();
     } catch (error) {

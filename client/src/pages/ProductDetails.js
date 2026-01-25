@@ -4,6 +4,10 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCart } from "../context/cart";
 import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
+import { FiShoppingCart, FiHeart, FiShare2 } from "react-icons/fi";
+import { FaStar, FaStarHalfAlt } from "react-icons/fa";
+import { BiMinus, BiPlus } from "react-icons/bi";
 
 const ProductDetails = () => {
   const params = useParams();
@@ -11,24 +15,29 @@ const ProductDetails = () => {
   const [product, setProduct] = useState({});
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [cart, setCart] = useCart();
+  const [quantity, setQuantity] = useState(1);
+  const [isZoomed, setIsZoomed] = useState(false);
 
-  //initalp details
+  // Load product details
   useEffect(() => {
     if (params?.slug) getProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params?.slug]);
-  //getProduct
+
   const getProduct = async () => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API}/api/v1/product/get-product/${params.slug}`
       );
-      setProduct(data?.product);
-      getSimilarProduct(data?.product._id, data?.product.category._id);
+      setProduct(data?.product || {});
+      if (data?.product?._id && data?.product?.category?._id) {
+        getSimilarProduct(data.product._id, data.product.category._id);
+      }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
-  //get similar product
+
   const getSimilarProduct = async (pid, cid) => {
     try {
       const { data } = await axios.get(
@@ -36,217 +45,199 @@ const ProductDetails = () => {
       );
       setRelatedProducts(data?.products);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
-  const addToCart = (product) => {
+  const addToCart = () => {
     const existingItemIndex = cart.findIndex((item) => item._id === product._id);
+    let updatedCart = [];
 
     if (existingItemIndex !== -1) {
-      const updatedCart = [...cart];
-      updatedCart[existingItemIndex].quantity += 1;
-      setCart(updatedCart);
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      updatedCart = [...cart];
+      updatedCart[existingItemIndex].quantity += quantity;
       toast.success("Item quantity increased in cart");
     } else {
-      const updatedCart = [...cart, { ...product, quantity: 1 }];
-      setCart(updatedCart);
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      updatedCart = [...cart, { ...product, quantity }];
       toast.success("Item added to cart");
     }
-    // setCart([...cart, { ...product, quantity: 1 }]);
+
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
+
+  const handleQuantityChange = (action) => {
+    if (action === 'increment') {
+      setQuantity(prev => prev + 1);
+    } else if (action === 'decrement' && quantity > 1) {
+      setQuantity(prev => prev - 1);
+    }
+  };
+
+  const handleImageZoom = (e) => {
+    if (!isZoomed) return;
+    const image = e.currentTarget;
+    const { left, top, width, height } = image.getBoundingClientRect();
+    const x = (e.clientX - left) / width * 100;
+    const y = (e.clientY - top) / height * 100;
+    image.style.transformOrigin = `${x}% ${y}%`;
+  };
+
   return (
     <Layout>
-      <section class="text-gray-700 body-font overflow-hidden bg-white">
-        <div class="container px-5 py-24 mx-auto">
-          <div class="lg:w-4/5 mx-auto flex flex-wrap">
-            <img
-              alt="ecommerce"
-              class="lg:w-1/2 w-full object-cover object-center rounded border border-gray-200"
-              src={`${process.env.REACT_APP_API}/api/v1/product/product-photo/${product._id}`}
-            />
-            <div class="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
-              <h2 class="text-sm title-font text-gray-500 tracking-widest">
-                {product?.category?.name}
-              </h2>
-              <h1 class="text-gray-900 text-3xl title-font font-medium mb-1">
-                {product.name}
-              </h1>
-              <div class="flex mb-4">
-                <span class="flex items-center">
-                  <svg
-                    fill="currentColor"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    class="w-4 h-4 text-red-500"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                  </svg>
-                  <svg
-                    fill="currentColor"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    class="w-4 h-4 text-red-500"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                  </svg>
-                  <svg
-                    fill="currentColor"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    class="w-4 h-4 text-red-500"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                  </svg>
-                  <svg
-                    fill="currentColor"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    class="w-4 h-4 text-red-500"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                  </svg>
-                  <svg
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    class="w-4 h-4 text-red-500"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                  </svg>
-                  <span class="text-gray-600 ml-3">4 Reviews</span>
-                </span>
-                <span class="flex ml-3 pl-3 py-2 border-l-2 border-gray-200">
-                  <a href="https://facebook.com" class="text-gray-500">
-                    <svg
-                      fill="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      class="w-5 h-5"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path>
-                    </svg>
-                  </a>
-                  <a class="ml-2 text-gray-500">
-                    <svg
-                      fill="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      class="w-5 h-5"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
-                    </svg>
-                  </a>
-                  <a class="ml-2 text-gray-500">
-                    <svg
-                      fill="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      class="w-5 h-5"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"></path>
-                    </svg>
-                  </a>
-                </span>
-              </div>
-              <p class="leading-relaxed">{product.description}</p>
-              <div class="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5"></div>
-              <div class="flex">
-                <span class="title-font font-medium text-2xl text-gray-900">
-                  Price : ${product.price}
-                </span>
-                <button
-                  onClick={() => addToCart(product)}
-                  class="flex ml-auto text-white bg-red-500 border-0 py-2 px-6 focus:outline-none hover:bg-red-600 rounded"
-                >
-                  Add to Cart
-                </button>
-                <button class="rounded-full w-10 h-10 bg-gray-200 p-0 border-0 inline-flex items-center justify-center text-gray-500 ml-4">
-                  <svg
-                    fill="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    class="w-5 h-5"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
-                  </svg>
-                </button>
-              </div>
+      <section className="text-slate-700 overflow-hidden bg-gradient-to-b from-slate-50 to-white">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="lg:w-4/5 mx-auto flex flex-wrap bg-white rounded-2xl shadow-card-hover border border-slate-200/60 p-6 sm:p-8"
+          >
+            <div className="lg:w-1/2 w-full relative">
+              <motion.div
+                className="relative aspect-square overflow-hidden rounded-xl"
+                onHoverStart={() => setIsZoomed(true)}
+                onHoverEnd={() => setIsZoomed(false)}
+              >
+                <img
+                  alt={product.name}
+                  className={`w-full h-full object-cover object-center transition-transform duration-500 ${
+                    isZoomed ? 'scale-150' : 'scale-100'
+                  }`}
+                  src={`${process.env.REACT_APP_API}/api/v1/product/product-photo/${product._id}`}
+                  onMouseMove={handleImageZoom}
+                />
+              </motion.div>
             </div>
-          </div>
-        </div>
-      </section>
-      <hr />
-      <div className="row container">
-        {/* <h6>Similar Products</h6> */}
 
-        {relatedProducts.length < 1 && (
-          <p className="text-center">No Similar Products found</p>
-        )}
-        <div className="bg-white">
-          <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900">
-              Customers also purchased
-            </h2>
+            <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm bg-brand-50 text-brand-700 px-3 py-1.5 rounded-full tracking-wider font-semibold">
+                    {product?.category?.name}
+                  </h2>
+                  <button className="text-slate-500 hover:text-brand-600 transition-colors p-1.5 rounded-lg hover:bg-brand-50">
+                    <FiShare2 className="w-5 h-5" />
+                  </button>
+                </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-              {relatedProducts.map((product) => (
-                <div key={product.id} className="group relative">
-                  <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
-                    <img
-                      src={`${process.env.REACT_APP_API}/api/v1/product/product-photo/${product?._id}`}
-                      className="h-full w-full object-cover object-center lg:h-full lg:w-full"
-                      alt={product.name}
-                      onClick={() => {
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                        navigate(`/product/${product.slug}`);
-                      }}
-                    />
+                <h1 className="font-display text-slate-900 text-3xl sm:text-4xl font-bold mb-4">{product.name}</h1>
+
+                <div className="flex items-center mb-4">
+                  <div className="flex text-amber-400 mr-2">
+                    <FaStar />
+                    <FaStar />
+                    <FaStar />
+                    <FaStar />
+                    <FaStarHalfAlt />
                   </div>
-                  <div className="mt-4 flex justify-between">
-                    <div>
-                      <h3 className="text-sm text-black">
-                        {product.name.substring(0, 29)}...
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {product.description.substring(0, 30)}...
-                      </p>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900">
-                      ${product.price}
-                    </p>
+                  <span className="text-slate-600">(4.5) · 128 Reviews</span>
+                </div>
+
+                <div className="border-t border-b border-slate-200 py-6 mb-6">
+                  <p className="leading-relaxed text-slate-700">{product.description}</p>
+                </div>
+
+                <div className="flex items-center mb-6">
+                  <span className="font-display font-bold text-3xl text-slate-900">
+                    ${product.price}
+                  </span>
+                  <span className="text-brand-600 ml-4 text-sm font-medium">In Stock</span>
+                </div>
+
+                <div className="flex items-center gap-6 mb-6">
+                  <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => handleQuantityChange('decrement')}
+                      className="p-2.5 hover:bg-slate-50 text-slate-600"
+                    >
+                      <BiMinus className="w-4 h-4" />
+                    </button>
+                    <span className="w-12 text-center font-semibold text-slate-900">{quantity}</span>
+                    <button
+                      onClick={() => handleQuantityChange('increment')}
+                      className="p-2.5 hover:bg-slate-50 text-slate-600"
+                    >
+                      <BiPlus className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              ))}
+
+                <div className="flex items-center gap-4">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={addToCart}
+                    className="flex-1 btn-accent py-3 px-6 flex items-center justify-center gap-2"
+                  >
+                    <FiShoppingCart className="w-5 h-5" />
+                    <span>Add to Cart</span>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="rounded-xl w-12 h-12 bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+                  >
+                    <FiHeart className="w-5 h-5" />
+                  </motion.button>
+                </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </section>
+
+      <section className="bg-slate-50 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <h2 className="font-display text-2xl font-bold text-slate-900 mb-1">You May Also Like</h2>
+            <p className="text-slate-600 mb-8">Based on your shopping preferences</p>
+
+            {relatedProducts.length < 1 ? (
+              <div className="text-center py-12 rounded-2xl border border-slate-200 bg-white">
+                <p className="text-slate-500">No similar products found</p>
+              </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {relatedProducts.map((p) => (
+                  <motion.div
+                    key={p._id}
+                    whileHover={{ y: -4 }}
+                    className="card-product group cursor-pointer"
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      navigate(`/product/${p.slug}`);
+                    }}
+                  >
+                    <div className="aspect-[4/5] overflow-hidden bg-slate-100">
+                      <img
+                        src={`${process.env.REACT_APP_API}/api/v1/product/product-photo/${p._id}`}
+                        alt={p.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-display font-semibold text-slate-900 truncate">{p.name}</h3>
+                        <span className="text-brand-600 font-bold">${p.price}</span>
+                      </div>
+                      <p className="text-slate-500 text-sm line-clamp-2">{p.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </div>
+      </section>
     </Layout>
   );
 };
